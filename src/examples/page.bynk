@@ -1,0 +1,85 @@
+commons examples.page
+
+uses examples.model
+uses bynk.string
+
+-- The index as an HTML page: one card per repository, grouped by kind, each
+-- with its newest result from the compat board.
+---
+Escapes text for an HTML body or a double-quoted attribute.
+---
+fn escape(s: String) -> String {
+	s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+}
+
+---
+How long ago something happened, in words, from two epoch-millisecond times.
+---
+fn ago(thenMs: Int, nowMs: Int) -> String {
+	let minutes = (nowMs - thenMs) / 60000
+	match minutes < 1 {
+		true => "just now",
+		false => match minutes < 60 {
+			true => "\(minutes) min ago",
+			false => "\(minutes / 60) h ago",
+		},
+	}
+}
+
+---
+A repository's status badge: the newest Bynk release it passed or failed
+with, linked to that run, or a note that there is no result yet.
+---
+fn badge(l: Listing) -> String {
+	match l.status {
+		"pass" => "<a class=\"badge pass\" href=\"\(escape(l.run_url))\">passes with Bynk \(escape(l.bynk_version))</a>",
+		"fail" => "<a class=\"badge fail\" href=\"\(escape(l.run_url))\">fails with Bynk \(escape(l.bynk_version))</a>",
+		_ => "<span class=\"badge none\">no results yet</span>",
+	}
+}
+
+---
+One repository's card.
+---
+fn card(l: Listing) -> String {
+	"<li class=\"card\"><h3><a href=\"https://github.com/\(escape(l.repo))\">\(escape(l.repo))</a></h3><p>\(escape(l.description))</p>\(badge(l))</li>"
+}
+
+---
+The heading for a group of repositories of one kind.
+---
+fn heading(kind: String) -> String {
+	match kind {
+		"example" => "Examples",
+		"action" => "GitHub Actions",
+		_ => "Books",
+	}
+}
+
+---
+One kind's section, or nothing if no repository has that kind.
+---
+fn section(listings: List[Listing], kind: String) -> String {
+	let mine = listings.filter((l) => l.kind == kind)
+	match mine.count() {
+		0 => "",
+		_ => "<section><h2>\(heading(kind))</h2><ul>\(join(mine.map((l) => card(l)), ""))</ul></section>",
+	}
+}
+
+---
+The whole page. `stale` is set when the newest refresh failed and an older
+copy is being shown.
+---
+fn render(listings: List[Listing], refreshedAtMs: Int, stale: Bool, nowMs: Int) -> String {
+	let note = match stale {
+		true => " <strong>Couldn't refresh just now; this may be out of date.</strong>",
+		false => "",
+	}
+	let body = join(["example", "action", "book"].map((k) => section(listings, k)), "")
+	"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Bynk in bynk-lang</title><style>\(style())</style></head><body><h1>Bynk in bynk-lang</h1><p>The org's projects written in or for <a href=\"https://github.com/accuser/bynk\">Bynk</a>, each with the newest Bynk release the <a href=\"https://github.com/bynk-lang/.github/blob/main/canary/README.md\">org canary</a> tested it against. Full results: <a href=\"https://compat-board.accuser.workers.dev/\">the compat board</a>. <a href=\"/examples.json\">JSON</a></p>\(body)<footer>Refreshed \(ago(refreshedAtMs, nowMs)).\(note)</footer></body></html>"
+}
+
+fn style() -> String {
+	"body{font:15px/1.5 system-ui,sans-serif;margin:2rem auto;max-width:56rem;padding:0 1rem;color:#1f2328;background:#fff}ul{list-style:none;padding:0;display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))}.card{border:1px solid #d0d7de;border-radius:6px;padding:1rem}.card h3{margin:0 0 .25rem;font-size:1rem}.card p{margin:0 0 .75rem;color:#59636e}.badge{display:inline-block;padding:.1rem .5rem;border-radius:1rem;font-size:.85rem;text-decoration:none}.pass{background:#dafbe1;color:#116329}.fail{background:#ffebe9;color:#a40e26}.none{background:#f6f8fa;color:#59636e}footer{margin-top:2rem;color:#59636e;font-size:.85rem}a{color:#0969da}@media (prefers-color-scheme:dark){body{color:#e6edf3;background:#0d1117}.card{border-color:#30363d}.card p,footer{color:#9198a1}.pass{background:#12361f;color:#7ee2a8}.fail{background:#4b1113;color:#ffa198}.none{background:#161b22;color:#9198a1}a{color:#4493f8}}"
+}

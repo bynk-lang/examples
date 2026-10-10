@@ -1,0 +1,163 @@
+context examples.index
+
+uses examples.model
+uses examples.page
+consumes bynk { Clock, Fetch }
+
+-- The examples index: the canary registry merged with the compat board's
+-- results, refreshed at most every five minutes, as a page (`GET /`) and as
+-- JSON (`GET /examples.json`).
+---
+Where the index reads its two documents from.
+---
+capability Sources {
+	fn download(url: String) -> Effect[Option[String]]
+}
+
+---
+`Sources` over the platform's `Fetch`: a body, or `None` on a network error, a
+timeout, or any status other than 200.
+---
+provides Sources = FetchSources given Fetch {
+	fn download(url: String) -> Effect[Option[String]] {
+		let res <- Fetch.send(Request {
+			method: Get,
+			url: url,
+			contentType: None,
+			authorization: None,
+			body: None,
+		})
+		match res {
+			Ok(r) => match r.status == 200 {
+				true => Some(r.body),
+				false => None,
+			},
+			Err(_) => None,
+		}
+	}
+}
+
+---
+One merged index, and when it was made (epoch milliseconds).
+---
+type Snapshot = { listings: List[Listing], refreshed_at_ms: Int }
+
+---
+What `GET /examples.json` serves. `stale` is set when the newest refresh
+failed and the last good snapshot is shown instead.
+---
+type View = { repos: List[Listing], refreshed_at_ms: Int, stale: Bool }
+
+---
+The registry from its JSON, or `None` if it's missing or doesn't decode.
+---
+fn decodeRegistry(text: Option[String]) -> Option[Registry] {
+	match text {
+		Some(t) => match Json.decode[Registry](t) {
+			Ok(r) => Some(r),
+			Err(_) => None,
+		},
+		None => None,
+	}
+}
+
+---
+The compat board's results from their JSON, or `None` if they're missing or
+don't decode.
+---
+fn decodeBoard(text: Option[String]) -> Option[Board] {
+	match text {
+		Some(t) => match Json.decode[Board](t) {
+			Ok(b) => Some(b),
+			Err(_) => None,
+		},
+		None => None,
+	}
+}
+
+---
+A fresh snapshot from the two documents, or `None` if either is missing or
+doesn't decode.
+---
+fn build(registryText: Option[String], boardText: Option[String], nowMs: Int) -> Option[Snapshot] {
+	match decodeRegistry(registryText) {
+		Some(r) => match decodeBoard(boardText) {
+			Some(b) => Some(Snapshot { listings: merge(r, b), refreshed_at_ms: nowMs }),
+			None => None,
+		},
+		None => None,
+	}
+}
+
+fn shown(s: Snapshot, stale: Bool) -> View {
+	View { repos: s.listings, refreshed_at_ms: s.refreshed_at_ms, stale: stale }
+}
+
+---
+The one index. It keeps the newest snapshot for five minutes, and the last
+good one for as long as refreshes keep failing.
+---
+agent Index {
+	key id: String
+
+	store fresh: Cache[String, Snapshot] @ttl(5.minutes)
+	store lastGood: Cell[Option[Snapshot]]
+
+	---
+	The index to serve: the cached snapshot while it's under five minutes old,
+	otherwise a fresh one, otherwise the last good one marked stale. `None`
+	only if no refresh has ever succeeded.
+	---
+	on call view() -> Effect[Option[View]] given Clock, Sources {
+		let cached <- fresh.get("snapshot")
+		match cached {
+			Some(s) => Some(shown(s, false)),
+			None => {
+				let registryText <- Sources.download(
+					"https://raw.githubusercontent.com/bynk-lang/.github/main/canary/repos.json"
+				)
+				let boardText <- Sources.download(
+					"https://compat-board.accuser.workers.dev/board.json"
+				)
+				let now <- Clock.now()
+				match build(registryText, boardText, now.toEpochMillis()) {
+					Some(s) => {
+						let _ <- fresh.put("snapshot", s)
+						lastGood := Some(s)
+						Some(shown(s, false))
+					},
+					None => {
+						let old = lastGood
+						old.map((s) => shown(s, true))
+					},
+				}
+			},
+		}
+	}
+}
+
+service api from http {
+	on GET("/examples.json") () -> Effect[HttpResult[View]] by Visitor {
+		let view <- Index("main").view()
+		match view {
+			Some(v) => Ok(v),
+			None => ServiceUnavailable(
+				"the index has not been built yet: the registry or the compat board is unreachable"
+			),
+		}
+	}
+
+	on GET("/") () -> Effect[HttpResult[()]] by Visitor given Clock {
+		let view <- Index("main").view()
+		let now <- Clock.now()
+		match view {
+			Some(v) => Raw(
+				Bytes.fromUtf8(render(v.repos, v.refreshed_at_ms, v.stale, now.toEpochMillis())),
+				"text/html; charset=utf-8"
+			),
+			None => ServiceUnavailable(
+				"the index has not been built yet: the registry or the compat board is unreachable"
+			),
+		}
+	}
+}
