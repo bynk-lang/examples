@@ -1,0 +1,65 @@
+suite examples.model {
+	case "newer versions rank higher; a pre-release just below its release" {
+		expect versionRank("0.314.23") > versionRank("0.313.0")
+		expect versionRank("0.315.0-rc1") < versionRank("0.315.0")
+		expect versionRank("0.315.0-rc1") > versionRank("0.314.23")
+	}
+
+	case "each repository gets its newest version's result" {
+		let registry = Registry {
+			repos: [Entry { repo: "bynk-lang/a", kind: "example", description: "A" }],
+		}
+		let board = Board {
+			runs: [
+				BoardRun {
+					repo: "bynk-lang/a",
+					bynk_version: "0.313.0",
+					result: "pass",
+					run_url: "https://github.com/bynk-lang/a/actions/runs/1",
+				},
+				BoardRun {
+					repo: "bynk-lang/a",
+					bynk_version: "0.314.23",
+					result: "fail",
+					run_url: "https://github.com/bynk-lang/a/actions/runs/2",
+				},
+				BoardRun {
+					repo: "bynk-lang/b",
+					bynk_version: "0.314.23",
+					result: "pass",
+					run_url: "https://github.com/bynk-lang/b/actions/runs/3",
+				},
+			],
+		}
+		let listings = merge(registry, board)
+		expect listings.count() == 1
+		expect listings
+			.filter((l) => l.status == "fail" && l.bynk_version == "0.314.23")
+			.count() == 1
+	}
+
+	case "a repository with no results says so" {
+		let registry = Registry {
+			repos: [Entry { repo: "bynk-lang/a", kind: "example", description: "A" }],
+		}
+		let listings = merge(registry, Board { runs: [] })
+		expect listings
+			.filter((l) => l.status == "none" && l.bynk_version == "" && l.run_url == "")
+			.count() == 1
+	}
+
+	case "examples come first, then actions, then books, each by name" {
+		let registry = Registry {
+			repos: [
+				Entry { repo: "bynk-lang/z-action", kind: "action", description: "Z" },
+				Entry { repo: "bynk-lang/book", kind: "book", description: "B" },
+				Entry { repo: "bynk-lang/y-example", kind: "example", description: "Y" },
+				Entry { repo: "bynk-lang/a-action", kind: "action", description: "A" },
+			],
+		}
+		let order = merge(registry, Board { runs: [] }).map((l) => "\(l.repo)")
+		expect order.first() == Some("bynk-lang/y-example")
+		expect order.skip(1).first() == Some("bynk-lang/a-action")
+		expect order.skip(3).first() == Some("bynk-lang/book")
+	}
+}

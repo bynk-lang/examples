@@ -1,0 +1,119 @@
+commons examples.model
+
+-- The two documents the index reads, and how it merges them: the canary
+-- registry (bynk-lang/.github canary/repos.json) and the compat board's
+-- results (bynk-lang/compat-board, GET /board.json).
+---
+A repository, as `owner/name`.
+---
+type Repo = String where Matches("[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?/[A-Za-z0-9._-]+")
+
+---
+A repository's kind in the registry.
+---
+type Kind = String where Matches("example|action|book")
+
+---
+A Bynk release, bare: `0.314.23`, or a pre-release such as `0.315.0-rc1`.
+---
+type Version = String where Matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.]+)?")
+
+---
+One registry entry. The registry has more keys (`$schema`); decoding ignores
+them.
+---
+type Entry = { repo: Repo, kind: Kind, description: String }
+
+---
+The canary registry.
+---
+type Registry = { repos: List[Entry] }
+
+---
+One result on the compat board. The board's runs carry more fields; decoding
+ignores them.
+---
+type BoardRun = { repo: Repo, bynk_version: Version, result: String, run_url: String }
+
+---
+The compat board's results.
+---
+type Board = { runs: List[BoardRun] }
+
+---
+One repository as the index shows it. `status` is `pass`, `fail`, or `none`
+when the board has no result for it yet, and then `bynk_version` and
+`run_url` are empty.
+---
+type Listing = {
+	repo: Repo,
+	kind: Kind,
+	description: String,
+	status: String,
+	bynk_version: String,
+	run_url: String,
+}
+
+---
+An integer that orders versions: higher is newer, and a pre-release sorts
+just below its release. The same rule as the compat board's.
+---
+fn versionRank(version: String) -> Int {
+	let parts = version.split("-")
+	let core = parts.first().getOrElse(version)
+	let pre = parts.count() > 1
+	let nums = core.split(".").map((p) => Int.parse(p).getOrElse(0))
+	let major = nums.first().getOrElse(0)
+	let minor = nums.skip(1).first().getOrElse(0)
+	let patch = nums.skip(2).first().getOrElse(0)
+	let base = ((major * 1000000 + minor) * 1000 + patch) * 2
+	match pre {
+		true => base,
+		false => base + 1,
+	}
+}
+
+---
+Where kinds sort: examples first, then actions, then books.
+---
+fn kindRank(kind: String) -> Int {
+	match kind {
+		"example" => 0,
+		"action" => 1,
+		_ => 2,
+	}
+}
+
+---
+One registry entry with its newest result from the board.
+---
+fn listing(entry: Entry, board: Board) -> Listing {
+	let newest = board.runs.filter((r) => r.repo == entry.repo).sortBy((r) => 0 - versionRank(
+		r.bynk_version
+	)).first()
+	match newest {
+		Some(r) => Listing {
+			repo: entry.repo,
+			kind: entry.kind,
+			description: entry.description,
+			status: r.result,
+			bynk_version: "\(r.bynk_version)",
+			run_url: r.run_url,
+		},
+		None => Listing {
+			repo: entry.repo,
+			kind: entry.kind,
+			description: entry.description,
+			status: "none",
+			bynk_version: "",
+			run_url: "",
+		},
+	}
+}
+
+---
+Every registry entry with its newest result, examples first, then by name.
+---
+fn merge(registry: Registry, board: Board) -> List[Listing] {
+	registry.repos.map((e) => listing(e, board)).sortBy((l) => "\(kindRank(l.kind))\(l.repo)")
+}

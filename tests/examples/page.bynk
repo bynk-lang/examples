@@ -1,0 +1,58 @@
+suite examples.page {
+	case "escape covers the HTML specials" {
+		expect escape("<a href=\"x\">&</a>") == "&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;"
+	}
+
+	case "ago reads in minutes, then hours" {
+		expect ago(0, 30000) == "just now"
+		expect ago(0, 5 * 60000) == "5 min ago"
+		expect ago(0, 125 * 60000) == "2 h ago"
+	}
+
+	case "the page groups repositories and badges each result" {
+		let listings = [
+			Listing {
+				repo: "bynk-lang/compat-board",
+				kind: "example",
+				description: "Compat board",
+				status: "pass",
+				bynk_version: "0.314.23",
+				run_url: "https://github.com/bynk-lang/compat-board/actions/runs/1",
+			},
+			Listing {
+				repo: "bynk-lang/bynk-deploy",
+				kind: "action",
+				description: "Deploy",
+				status: "fail",
+				bynk_version: "0.313.0",
+				run_url: "https://github.com/bynk-lang/bynk-deploy/actions/runs/2",
+			},
+			Listing {
+				repo: "bynk-lang/new-thing",
+				kind: "action",
+				description: "New <thing>",
+				status: "none",
+				bynk_version: "",
+				run_url: "",
+			},
+		]
+		let page = render(listings, 0, false, 60000)
+		expect page.contains("<h2>Examples</h2>")
+		expect page.contains("<h2>GitHub Actions</h2>")
+		expect page.contains("<h2>Books</h2>") == false
+		expect page.contains(
+			"<a class=\"badge pass\" href=\"https://github.com/bynk-lang/compat-board/actions/runs/1\">passes with Bynk 0.314.23</a>"
+		)
+		expect page.contains(
+			"<a class=\"badge fail\" href=\"https://github.com/bynk-lang/bynk-deploy/actions/runs/2\">fails with Bynk 0.313.0</a>"
+		)
+		expect page.contains("<span class=\"badge none\">no results yet</span>")
+		expect page.contains("New &lt;thing&gt;")
+		expect page.contains("Refreshed 1 min ago.")
+		expect page.contains("may be out of date") == false
+	}
+
+	case "a stale page says it may be out of date" {
+		expect render([], 0, true, 0).contains("may be out of date")
+	}
+}

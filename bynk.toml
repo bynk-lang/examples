@@ -1,0 +1,5 @@
+# Bynk project manifest. examples: the bynk-lang org's Bynk projects, and which
+# Bynk releases each passes with.
+[project]
+name = "examples"
+version = "0.1.0"
