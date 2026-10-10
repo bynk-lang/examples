@@ -1,0 +1,8 @@
+version = 1
+
+[environments.default.kv]
+
+[environments.default.workers.examples-index]
+deployed = true
+
+[environments.default.workers.examples-index.contracts]
