@@ -25,6 +25,7 @@ provides Sources = FetchSources given Fetch {
 			url: url,
 			contentType: None,
 			authorization: None,
+			headers: Map.empty(),
 			body: None,
 		})
 		match res {
