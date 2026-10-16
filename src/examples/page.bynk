@@ -77,7 +77,7 @@ fn render(listings: List[Listing], refreshedAtMs: Int, stale: Bool, nowMs: Int) 
 		false => "",
 	}
 	let body = join(["example", "action", "book"].map((k) => section(listings, k)), "")
-	"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Bynk in bynk-lang</title><style>\(style())</style></head><body><h1>Bynk in bynk-lang</h1><p>The org's projects written in or for <a href=\"https://github.com/accuser/bynk\">Bynk</a>, each with the newest Bynk release the <a href=\"https://github.com/bynk-lang/.github/blob/main/canary/README.md\">org canary</a> tested it against. Full results: <a href=\"https://compat-board.accuser.workers.dev/\">the compat board</a>. <a href=\"/examples.json\">JSON</a></p>\(body)<footer>Refreshed \(ago(refreshedAtMs, nowMs)).\(note)</footer></body></html>"
+	"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Bynk in bynk-lang</title><style>\(style())</style></head><body><h1>Bynk in bynk-lang</h1><p>The org's projects written in or for <a href=\"https://github.com/bynk-lang/bynk\">Bynk</a>, each with the newest Bynk release the <a href=\"https://github.com/bynk-lang/.github/blob/main/canary/README.md\">org canary</a> tested it against. Full results: <a href=\"https://compat-board.accuser.workers.dev/\">the compat board</a>. <a href=\"/examples.json\">JSON</a></p>\(body)<footer>Refreshed \(ago(refreshedAtMs, nowMs)).\(note)</footer></body></html>"
 }
 
 fn style() -> String {

@@ -75,10 +75,10 @@ The Worker is called `examples-index`. After the first deploy, commit the
 ## Limits from Bynk today
 
 - **No GitHub metadata.** `Fetch.send` can't set a `User-Agent`, which
-  `api.github.com` requires (accuser/bynk#1886). So the index reads only
+  `api.github.com` requires (bynk-lang/bynk#1886). So the index reads only
   `raw.githubusercontent.com` and the board, and can't show stars or topics.
 - **No optional JSON fields.** `Json.decode` reads an `Option` field only in
-  Bynk's tagged form (accuser/bynk#1887). That's why the registry's
+  Bynk's tagged form (bynk-lang/bynk#1887). That's why the registry's
   `description` is required, and why `examples.json` uses `status: "none"` and
   empty strings rather than an absent field.
 
