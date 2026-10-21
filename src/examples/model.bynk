@@ -1,8 +1,8 @@
 commons examples.model
 
--- The two documents the index reads, and how it merges them: the canary
--- registry (bynk-lang/.github canary/repos.json) and the compat board's
--- results (bynk-lang/compat-board, GET /board.json).
+// The two documents the index reads, and how it merges them: the canary
+// registry (bynk-lang/.github canary/repos.json) and the compat board's
+// results (bynk-lang/compat-board, GET /board.json).
 ---
 A repository, as `owner/name`.
 ---

@@ -3,8 +3,8 @@ commons examples.page
 uses examples.model
 uses bynk.string
 
--- The index as an HTML page: one card per repository, grouped by kind, each
--- with its newest result from the compat board.
+// The index as an HTML page: one card per repository, grouped by kind, each
+// with its newest result from the compat board.
 ---
 Escapes text for an HTML body or a double-quoted attribute.
 ---

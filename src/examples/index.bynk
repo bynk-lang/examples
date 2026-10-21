@@ -4,9 +4,9 @@ uses examples.model
 uses examples.page
 consumes bynk { Clock, Fetch }
 
--- The examples index: the canary registry merged with the compat board's
--- results, refreshed at most every five minutes, as a page (`GET /`) and as
--- JSON (`GET /examples.json`).
+// The examples index: the canary registry merged with the compat board's
+// results, refreshed at most every five minutes, as a page (`GET /`) and as
+// JSON (`GET /examples.json`).
 ---
 Where the index reads its two documents from.
 ---
