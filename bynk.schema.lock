@@ -1,3 +1,23 @@
-version = 1
+version = 2
 
 [events]
+
+[agents."examples.index.Index"]
+version = 1
+floor = 1
+
+[[agents."examples.index.Index".shapes]]
+version = 1
+additive = false
+
+[[agents."examples.index.Index".shapes.fields]]
+name = "fresh"
+kind = "Cache"
+type = "String, {listings: List[{bynk_version: String, description: String, kind: String, repo: String, run_url: String, status: String}], refreshed_at_ms: Int}"
+refinement = 'String, {listings: List[{bynk_version: String, description: String, kind: String where Matches("example|action|book"), repo: String where Matches("[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?/[A-Za-z0-9._-]+"), run_url: String, status: String}], refreshed_at_ms: Int}'
+
+[[agents."examples.index.Index".shapes.fields]]
+name = "lastGood"
+kind = "Cell"
+type = "Option[{listings: List[{bynk_version: String, description: String, kind: String, repo: String, run_url: String, status: String}], refreshed_at_ms: Int}]"
+refinement = 'Option[{listings: List[{bynk_version: String, description: String, kind: String where Matches("example|action|book"), repo: String where Matches("[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?/[A-Za-z0-9._-]+"), run_url: String, status: String}], refreshed_at_ms: Int}]'
