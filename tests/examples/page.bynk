@@ -28,6 +28,14 @@ suite examples.page {
 				run_url: "https://github.com/bynk-lang/bynk-deploy/actions/runs/2",
 			},
 			Listing {
+				repo: "bynk-lang/playground",
+				kind: "app",
+				description: "Playground",
+				status: "pass",
+				bynk_version: "0.314.23",
+				run_url: "https://github.com/bynk-lang/playground/actions/runs/3",
+			},
+			Listing {
 				repo: "bynk-lang/new-thing",
 				kind: "action",
 				description: "New <thing>",
@@ -39,6 +47,7 @@ suite examples.page {
 		let page = render(listings, 0, false, 60000)
 		expect page.contains("<h2>Examples</h2>")
 		expect page.contains("<h2>GitHub Actions</h2>")
+		expect page.contains("<h2>Apps</h2>")
 		expect page.contains("<h2>Books</h2>") == false
 		expect page.contains(
 			"<a class=\"badge pass\" href=\"https://github.com/bynk-lang/compat-board/actions/runs/1\">passes with Bynk 0.314.23</a>"
