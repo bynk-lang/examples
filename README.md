@@ -11,7 +11,7 @@ The index reads two documents and merges them:
   which Bynk release each repository last passed or failed with.
 
 It shows every repository grouped by kind (examples first, then GitHub
-Actions, then books), each with its newest result.
+Actions, then apps, then books), each with its newest result.
 
 ## Endpoints
 

@@ -48,11 +48,12 @@ suite examples.model {
 			.count() == 1
 	}
 
-	case "examples come first, then actions, then books, each by name" {
+	case "examples come first, then actions, apps, then books, each by name" {
 		let registry = Registry {
 			repos: [
 				Entry { repo: "bynk-lang/z-action", kind: "action", description: "Z" },
 				Entry { repo: "bynk-lang/book", kind: "book", description: "B" },
+				Entry { repo: "bynk-lang/an-app", kind: "app", description: "P" },
 				Entry { repo: "bynk-lang/y-example", kind: "example", description: "Y" },
 				Entry { repo: "bynk-lang/a-action", kind: "action", description: "A" },
 			],
@@ -60,6 +61,7 @@ suite examples.model {
 		let order = merge(registry, Board { runs: [] }).map((l) => "\(l.repo)")
 		expect order.first() == Some("bynk-lang/y-example")
 		expect order.skip(1).first() == Some("bynk-lang/a-action")
-		expect order.skip(3).first() == Some("bynk-lang/book")
+		expect order.skip(3).first() == Some("bynk-lang/an-app")
+		expect order.skip(4).first() == Some("bynk-lang/book")
 	}
 }
