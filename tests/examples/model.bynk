@@ -51,11 +51,31 @@ suite examples.model {
 	case "examples come first, then actions, apps, then books, each by name" {
 		let registry = Registry {
 			repos: [
-				Entry { repo: "bynk-lang/z-action", kind: "action", description: "Z" },
-				Entry { repo: "bynk-lang/book", kind: "book", description: "B" },
-				Entry { repo: "bynk-lang/an-app", kind: "app", description: "P" },
-				Entry { repo: "bynk-lang/y-example", kind: "example", description: "Y" },
-				Entry { repo: "bynk-lang/a-action", kind: "action", description: "A" },
+				Entry {
+					repo: "bynk-lang/z-action",
+					kind: "action",
+					description: "Z",
+				},
+				Entry {
+					repo: "bynk-lang/book",
+					kind: "book",
+					description: "B",
+				},
+				Entry {
+					repo: "bynk-lang/an-app",
+					kind: "app",
+					description: "P",
+				},
+				Entry {
+					repo: "bynk-lang/y-example",
+					kind: "example",
+					description: "Y",
+				},
+				Entry {
+					repo: "bynk-lang/a-action",
+					kind: "action",
+					description: "A",
+				},
 			],
 		}
 		let order = merge(registry, Board { runs: [] }).map((l) => "\(l.repo)")

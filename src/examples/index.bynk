@@ -41,13 +41,20 @@ provides Sources = FetchSources given Fetch {
 ---
 One merged index, and when it was made (epoch milliseconds).
 ---
-type Snapshot = { listings: List[Listing], refreshed_at_ms: Int }
+type Snapshot = {
+	listings: List[Listing],
+	refreshed_at_ms: Int,
+}
 
 ---
 What `GET /examples.json` serves. `stale` is set when the newest refresh
 failed and the last good snapshot is shown instead.
 ---
-type View = { repos: List[Listing], refreshed_at_ms: Int, stale: Bool }
+type View = {
+	repos: List[Listing],
+	refreshed_at_ms: Int,
+	stale: Bool,
+}
 
 ---
 The registry from its JSON, or `None` if it's missing or doesn't decode.
@@ -91,7 +98,11 @@ fn build(registryText: Option[String], boardText: Option[String], nowMs: Int) ->
 }
 
 fn shown(s: Snapshot, stale: Bool) -> View {
-	View { repos: s.listings, refreshed_at_ms: s.refreshed_at_ms, stale: stale }
+	View {
+		repos: s.listings,
+		refreshed_at_ms: s.refreshed_at_ms,
+		stale: stale,
+	}
 }
 
 ---

@@ -22,23 +22,36 @@ type Version = String where Matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.]+)?
 One registry entry. The registry has more keys (`$schema`); decoding ignores
 them.
 ---
-type Entry = { repo: Repo, kind: Kind, description: String }
+type Entry = {
+	repo: Repo,
+	kind: Kind,
+	description: String,
+}
 
 ---
 The canary registry.
 ---
-type Registry = { repos: List[Entry] }
+type Registry = {
+	repos: List[Entry],
+}
 
 ---
 One result on the compat board. The board's runs carry more fields; decoding
 ignores them.
 ---
-type BoardRun = { repo: Repo, bynk_version: Version, result: String, run_url: String }
+type BoardRun = {
+	repo: Repo,
+	bynk_version: Version,
+	result: String,
+	run_url: String,
+}
 
 ---
 The compat board's results.
 ---
-type Board = { runs: List[BoardRun] }
+type Board = {
+	runs: List[BoardRun],
+}
 
 ---
 One repository as the index shows it. `status` is `pass`, `fail`, or `none`
