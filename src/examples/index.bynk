@@ -128,9 +128,7 @@ agent Index {
 				let registryText <- Sources.download(
 					"https://raw.githubusercontent.com/bynk-lang/.github/main/canary/repos.json"
 				)
-				let boardText <- Sources.download(
-					"https://compat-board.bynk-lang.dev/board.json"
-				)
+				let boardText <- Sources.download("https://compat-board.bynk-lang.dev/board.json")
 				let now <- Clock.now()
 				match build(registryText, boardText, now.toEpochMillis()) {
 					Some(s) => {
