@@ -69,8 +69,8 @@ secrets exist (until then it warns and skips):
 | `CLOUDFLARE_API_TOKEN` | A Cloudflare API token with Workers deploy scope. |
 | `CLOUDFLARE_ACCOUNT_ID` | The Cloudflare account ID. |
 
-The Worker is called `examples-index`. After the first deploy, commit the
-`bynk.deploy.lock` the workflow uploads as an artifact.
+The Worker is called `examples-index`. When a deploy changes
+`bynk.deploy.lock`, bynk-deploy opens a pull request that commits it, through the org's bump App (the workflow mints its token). Merge it: later deploys rely on what it records. Without the App, the workflow uploads the new lock as an artifact named `bynk.deploy.lock` to commit instead.
 
 ## Limits from Bynk today
 
