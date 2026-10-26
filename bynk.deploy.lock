@@ -6,3 +6,5 @@ version = 1
 deployed = true
 
 [environments.default.workers.examples-index.contracts]
+
+[environments.default.workers.examples-index.expects]
