@@ -52,7 +52,7 @@ The tests stub `Sources` and `Clock`, so they run offline.
 ## Run it locally
 
 ```sh
-bynkc test .
+bynk test .
 bynk dev
 ```
 
