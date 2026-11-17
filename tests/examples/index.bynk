@@ -1,5 +1,6 @@
 suite examples.index {
 	consumes bynk { Clock }
+
 	// Copies of the real documents (fetched 2026-10-10): decoding has to cope
 	// with the registry's `$schema` key and the board's extra fields.
 	case "the real registry and board decode" {
